@@ -222,15 +222,17 @@ UINT32 ParamManager::GetParam(INI_DEVICE_VALUE eValue)
 }
 
 
-void ParamManager::SetParam(INI_DEVICE_VALUE eType, UINT32 nValue)
+void ParamManager::SetParam(INI_DEVICE_VALUE eType, UINT32 nTypeIdx, UINT32 nValue)
 {
     m_nDeviceVal[eType] = nValue;
+    gParamTypes[nTypeIdx].bValueExist = TRUE;
 }
 
 
-void ParamManager::SetEnv(INI_ENV_VALUE eType, UINT32 nValue)
+void ParamManager::SetEnv(INI_ENV_VALUE eType, UINT32 nTypeIdx, UINT32 nValue)
 {
     m_nEnvVal[eType] = nValue;
+    gParamTypes[nTypeIdx].bValueExist = TRUE;
 }
 
 

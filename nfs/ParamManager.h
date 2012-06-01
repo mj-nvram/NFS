@@ -152,8 +152,8 @@ public :
     static UINT32   GetParam(INI_DEVICE_VALUE eValue);
     static UINT32   GetEnv(INI_ENV_VALUE eValue);
 
-    static void     SetParam(INI_DEVICE_VALUE eType, UINT32 nValue);
-    static void     SetEnv(INI_ENV_VALUE eType, UINT32 nValue);
+    static void     SetParam(INI_DEVICE_VALUE eType, UINT32 nTypeIdx, UINT32 nValue);
+    static void     SetEnv(INI_ENV_VALUE eType, UINT32 nTypeIdx, UINT32 nValue);
 
     static char*    HasAllParameterValues(void);
 

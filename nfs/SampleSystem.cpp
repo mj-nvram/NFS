@@ -69,10 +69,15 @@ typedef enum {
     DIE_FAIR_SCHEDULE,
 };
 
-#define     BUILD_PHYSICAL_ADDR(_nDie, _nPlane, _nPbn, _nPpo, _stNandDevConfig) \
+/*#define     BUILD_PHYSICAL_ADDR(_nDie, _nPlane, _nPbn, _nPpo, _stNandDevConfig) \
                                     (_nPpo) + ((_nPlane) * _stNandDevConfig._nNumsPgPerBlk) +\
                                     ((_nPbn) * _stNandDevConfig._nNumsPgPerBlk * _stNandDevConfig._nNumsPlane) +\
-                                    (_nDie * _stNandDevConfig._nNumsPgPerBlk * _stNandDevConfig._nNumsPlane * _stNandDevConfig._nNumsBlk)
+                                    (_nDie * _stNandDevConfig._nNumsPgPerBlk * _stNandDevConfig._nNumsPlane * _stNandDevConfig._nNumsBlk)*/
+
+#define BUILD_PHYSICAL_ADDR(_nDie, _nPlane, _nPbn, _nPpo, _stNandDevConfig) \
+                                    (_nPpo) | ((_nPlane) << _stNandDevConfig._bits._page) | \
+                                    ((_nPbn) << (_stNandDevConfig._bits._page + _stNandDevConfig._bits._plane)) | \
+                                    ((_nDie) << (_stNandDevConfig._bits._page + _stNandDevConfig._bits._plane + _stNandDevConfig._bits._blk))
 
 void BasicPagebasedOpTest(TESTUNIT_OP tuOp, NANDFlashSim::NandFlashSystem &flash, UINT16 nDie, UINT32 nNumsBlk, UINT32 nNumsPage, UINT32 nTransferPageSize, bool bWrite);
 void DieInterleavedOpTest(TESTUNIT_OP tuOp, NANDFlashSim::NandFlashSystem &flash, UINT16 nNumsDie, UINT32 nNumsBlk, UINT32 nNumsPageInBlk, UINT32 nTransferPageSize, bool bWrite );
@@ -129,8 +134,8 @@ int main(int argc, char* argv[])
         ("pins", po::value<UINT32>(), "The number of pins, NAND I/O interface")
         ("erasecnt,c", po::value<UINT32>(), "the number of allowed block erase, that can be erased without data corruption.")
         ("cp", po::value<UINT32>(), "Clock Periods")
-        ("tblocks,tb", po::value<UINT32>()->default_value(8), "The total number of blocks for testing")
-        ("tpages,tp", po::value<UINT32>()->default_value(8), "The number of of pages for testing")        
+        ("tblocks", po::value<UINT32>()->default_value(8), "The total number of blocks for testing")
+        ("tpages", po::value<UINT32>()->default_value(8), "The number of of pages for testing")        
         ;
 
     po::options_description odEnv("Environment options (Values must be boolean - 1 or 0.)");
@@ -198,9 +203,9 @@ int main(int argc, char* argv[])
         if(vm.count(pParamName))
         {
             if(gParamTypes[i].bIsEnv == TRUE)
-                ParamManager::SetEnv(gParamTypes[i].eEnvValue, vm[pParamName].as<UINT32>());
+                ParamManager::SetEnv(gParamTypes[i].eEnvValue, i, vm[pParamName].as<UINT32>());
             else
-                ParamManager::SetParam(gParamTypes[i].eDeviceValue, vm[pParamName].as<UINT32>());
+                ParamManager::SetParam(gParamTypes[i].eDeviceValue, i, vm[pParamName].as<UINT32>());
 
             gParamTypes[i].bValueExist = TRUE;
         }
