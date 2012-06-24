@@ -115,6 +115,7 @@ typedef UINT32                          NV_RET;
 
 // querying the page size from device configuration structure.
 #define         NAND_PLANE_SIZE(_stDevConfig)               (_stDevConfig._nPgSize * _stDevConfig._nNumsPgPerBlk * _stDevConfig._nNumsBlk)
+#define         NAND_BLOCK_SIZE(_stDevConfig)               (_stDevConfig._nPgSize * _stDevConfig._nNumsPgPerBlk)
 
 // Parsing an address residing in the row address register fully depends on the bit configuration macro (BITS_XXX).
 // There is nothing for you to change this macro for parsing address registers.

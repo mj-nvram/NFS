@@ -79,17 +79,7 @@ Plane::Plane( NandDeviceConfig &stDevConfig)
 Plane::~Plane()
 {
 #ifndef NO_STORAGE
-    size_t nTotalVirtualBlk = _stDevConfig._nNumsBlk / NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;
-    for(size_t nIdx = 0; nIdx < nTotalVirtualBlk; ++nIdx)
-    {
-        if(_vctpVirtualBlk[nIdx] != NULL)
-        {
-            if(_vctVirtualBlk[nIdx].is_open())
-            {
-                _vctVirtualBlk[nIdx].close();
-            }
-        }
-    }
+    resetPhysicalPlane();
 #endif
 }
 
@@ -120,7 +110,7 @@ NV_RET Plane::Read( UINT16 nCol, UINT32 nRow, UINT8 *pData )
 
     if(pData != NULL)
     {
-        UINT8 * memoryoffset         = _vctpVirtualBlk[nVirtualBlkIdx] + (nVirtualPgIdx * _stDevConfig._nPgSize + nCol);
+        UINT8 * memoryoffset = _vctpVirtualBlk[nVirtualBlkIdx] + (nVirtualPgIdx * _stDevConfig._nPgSize + nCol);
         memcpy(pData + nCol, memoryoffset, _stDevConfig._nPgSize - nCol);
     }
 #endif
@@ -178,7 +168,6 @@ NV_RET Plane::Write( UINT16 nCol, UINT32 nRow, UINT8 *pData )
     size_t  nVirtualBlkIdx  = nPbn / NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;
     size_t  nVirtualPgIdx   = (nPbn % NAND_VIRTUAL_BLOCK_IDX_RESOLUTION) * _stDevConfig._nNumsPgPerBlk + nPgoff;
 
-
     if(_vctpVirtualBlk[nVirtualBlkIdx] == NULL)
     {
         // for minimizing to allocate mapped file, it will be created on demand.
@@ -188,7 +177,7 @@ NV_RET Plane::Write( UINT16 nCol, UINT32 nRow, UINT8 *pData )
 
     if(pData != NULL)
     {
-        UINT8 * memoryoffset         = _vctpVirtualBlk[nVirtualBlkIdx] + (nVirtualPgIdx * _stDevConfig._nPgSize + nCol);
+        UINT8 * memoryoffset = _vctpVirtualBlk[nVirtualBlkIdx] + (nVirtualPgIdx * _stDevConfig._nPgSize + nCol);
         memcpy(memoryoffset, pData + nCol, _stDevConfig._nPgSize - nCol);
 
     }
@@ -209,22 +198,22 @@ UINT8* Plane::allocateVirtualNANDBlock(UINT32 nVirtualBlkIdx)
     strstream << ".\\phyicalData\\DEVID_" << _stDevConfig._nDeviceId << "_PLID" << _nId << "_VND" << nVirtualBlkIdx;
 
     mapParam.path           = strstream.str();
-    mapParam.flags          = io::mapped_file::mapmode::readwrite;
+    mapParam.flags          = io::mapped_file::readwrite;
 
     if(fs::exists(mapParam.path) == false)
     {
-        assert((_stDevConfig._nPgSize * _stDevConfig._nNumsPgPerBlk * _stDevConfig._nNumsBlk) != 0);
-        mapParam.new_file_size  = NAND_PLANE_SIZE(_stDevConfig);
+        assert((NAND_BLOCK_SIZE(_stDevConfig) * NAND_VIRTUAL_BLOCK_IDX_RESOLUTION) != 0);
+        mapParam.new_file_size  = NAND_BLOCK_SIZE(_stDevConfig) * NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;
     }
     else
     {
-        mapParam.length         = NAND_PLANE_SIZE(_stDevConfig);   
+        mapParam.length         = NAND_BLOCK_SIZE(_stDevConfig) * NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;   
     }
 
     _vctVirtualBlk[nVirtualBlkIdx].open(mapParam);
     if(_vctVirtualBlk[nVirtualBlkIdx].is_open()  == true)
     {
-        pAllocatedBlk    = (UINT8 *)_vctVirtualBlk[nVirtualBlkIdx].data();
+        pAllocatedBlk = (UINT8 *)_vctVirtualBlk[nVirtualBlkIdx].data();
     }
     else
     {
@@ -253,8 +242,8 @@ NV_RET Plane::Erase( UINT32 nRow )
     // This is because memory mapped file is initialized by '0'
     //
 #ifndef NO_STORAGE
-    // todo
-//  memset((void *)_vctpVirtualBlk[nPbn], 0x0, sizeof(UINT8) *_stDevConfig._nPgSize * _stDevConfig._nNumsPgPerBlk);
+    size_t  nVirtualBlkIdx = nPbn / NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;
+    memset((void *)_vctpVirtualBlk[nVirtualBlkIdx], 0x0, NAND_BLOCK_SIZE(_stDevConfig) * NAND_VIRTUAL_BLOCK_IDX_RESOLUTION);
 #endif
    _vctEcBlkInfo[nPbn]++;
 
@@ -271,29 +260,18 @@ NV_RET Plane::Erase( UINT32 nRow )
 void Plane::resetPhysicalPlane()
 {
 #ifndef NO_STORAGE
-    //
-    // load nand plane
-    //
-    io::mapped_file_params  mapParam;
-
-    std::ostringstream  strstream;
-    strstream << ".\\phyicalData\\DEVID_" << _stDevConfig._nDeviceId << "_PLID" << _nId << "_VND" << nVirtualBlkIdx;
-
-    mapParam.path           = strstream.str();
-    mapParam.flags          = io::mapped_file::mapmode::readwrite;
-
-    mapParam.new_file_size  = NAND_PLANE_SIZE(_stDevConfig);
-
-    _vctVirtualBlk.open(mapParam);
-    _vctpVirtualBlk = NULL;
-    if(_vctVirtualBlk.is_open()  == true)
-    {
-        _vctpVirtualBlk    = (UINT8 *)_vctVirtualBlk.data();
-    }
-    else
-    {
-        NV_ERROR("open fail for NAND plane data : " + strstream.str());
-    }
+	size_t nTotalVirtualBlk = _stDevConfig._nNumsBlk / NAND_VIRTUAL_BLOCK_IDX_RESOLUTION;
+	for(size_t nIdx = 0; nIdx < nTotalVirtualBlk; ++nIdx)
+	{
+		if(_vctpVirtualBlk[nIdx] != NULL)
+		{
+			if(_vctVirtualBlk[nIdx].is_open())
+			{
+				_vctVirtualBlk[nIdx].close();
+			}
+			_vctpVirtualBlk[nIdx] = NULL;
+		}
+	}
 #endif
 }
 
