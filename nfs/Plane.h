@@ -37,16 +37,18 @@
 #define _Plane_h__
 
 #include "boost/shared_array.hpp"
+#ifndef NO_STORAGE
 #include "boost/iostreams/device/mapped_file.hpp"
+#endif
 
 namespace NANDFlashSim {
 
 class Plane {
     typedef     boost::shared_array<UINT8>          PNOP_PGS;
-    typedef     boost::iostreams::mapped_file       VIRTUABLK_FILE;
-    
-    
+#ifndef NO_STORAGE 
+    typedef     boost::iostreams::mapped_file       VIRTUABLK_FILE;    
     std::vector < VIRTUABLK_FILE >      _vctVirtualBlk;
+#endif
     std::vector < UINT8 * >             _vctpVirtualBlk;
     NandDeviceConfig                    _stDevConfig;
     UINT32                              _nId;

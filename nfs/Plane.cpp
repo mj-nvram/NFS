@@ -50,9 +50,9 @@ namespace NANDFlashSim {
 
 Plane::Plane( NandDeviceConfig &stDevConfig) 
     : 
-    #ifndef NO_STORAGE
+#ifndef NO_STORAGE
     _vctpVirtualBlk(stDevConfig._nNumsBlk / NAND_VIRTUAL_BLOCK_IDX_RESOLUTION, NULL),
-    #endif
+#endif
     _stDevConfig(stDevConfig)
 {
 #ifndef NO_STORAGE
