@@ -31,6 +31,8 @@
 
 #include "TypeSystem.h"
 #include "ParamManager.h"
+#include <stdlib.h>
+#include <memory.h>
 
 
 namespace NANDFlashSim {

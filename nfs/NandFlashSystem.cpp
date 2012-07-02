@@ -463,7 +463,7 @@ void NandFlashSystem::InterruptService( NAND_ISR_TYPE nIsrType, UINT32 nArg1, UI
         assert(nArg1 < _stDevConfig._nNumsLun * _stDevConfig._nNumsDie);
         if(_pHostCallback != NULL)
         {
-            (*_pHostCallback)(_vctIncomingTrans[nArg1]._nHostTransId, _vctIncomingTrans[nArg1]._nTransOp, nArg2);
+            (*_pHostCallback)(_vctIncomingTrans[nArg1]._nHostTransId, _stDevConfig._nDeviceId/*_vctIncomingTrans[nArg1]._nTransOp*/, nArg2);
         }
         _vctIncomingTrans[nArg1]._nTransOp  = NAND_OP_NOT_DETERMINED;
         

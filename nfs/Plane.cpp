@@ -39,6 +39,7 @@
 #include "Tools.h"
 #include "Plane.h"
 #include "NandLogger.h"
+#include <memory.h>
 
 #ifndef NO_STORAGE
 namespace fs    = boost::filesystem;
