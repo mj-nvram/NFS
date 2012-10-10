@@ -151,6 +151,7 @@ void NandController::Update(UINT64 nTime)
     if(_nBubbleTime == 0 || nTime > _nBubbleTime)
     {
         nTime -= _nBubbleTime;
+		_vctLunLevelHostIdleTime[nLunIdx] += _nBubbleTime;
 
         _vctLuns[nLunIdx].Update(nTime);
        
@@ -203,8 +204,11 @@ void NandController::Update(UINT64 nTime)
 
             _vctDieLevelNandClockIdleTime[nLunIdx][nDieIdx] += _vctLuns[nLunIdx].GetCurNandClockIdleTime(nDieIdx);
             nHostIdle = _vctLuns[nLunIdx].GetCurHostClockIdleTime(nDieIdx);
-            _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nHostIdle;
-            if(nHostIdle < nMinIdle)
+            
+			_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += _nBubbleTime;
+			_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nHostIdle;
+            
+			if(nHostIdle < nMinIdle)
             {
                 nMinIdle = nHostIdle;
             }
@@ -235,7 +239,8 @@ void NandController::Update(UINT64 nTime)
 
             _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nTime;
         }
-         _vctLunLevelHostIdleTime[nLunIdx] += nTime;
+        
+		_vctLunLevelHostIdleTime[nLunIdx] += nTime;
         _nBubbleTime = _nBubbleTime - nTime;
     }
     
