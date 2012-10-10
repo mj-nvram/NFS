@@ -76,7 +76,7 @@ public :
     // interfaces for inquiring NAND flash status.
     //////////////////////////////////////////////////////////////////////////
     bool            IsBusy(UINT16 nBusId);
-    bool            IsBusy();
+	bool            IsBusy() { return IsActiveMode(); }
     UINT32          BusyDieNums();
     bool            IsActiveMode( void );
     bool            IsIoBusActive( void ) {return _controller.IsIoBusActive();}

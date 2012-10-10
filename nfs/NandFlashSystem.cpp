@@ -319,12 +319,13 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
     const UINT32 nClockPeriods = NFS_GET_PARAM(ISV_CLOCK_PERIODS);
     assert(nClockPeriods != 0);
 
+	const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
+
     if(nMinTime == 0 )
     {
-        bool bBusy = false;
-        for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
+        for(UINT32 nBusIdx = 0; nBusIdx < MAX_BUS; nBusIdx++)
         {
-            if(bBusy = IsBusy(nDieIdx))
+            if(IsBusy(nBusIdx))
             {
                 _controller.Update(ZERO_TIME);
                 nMinTime = _controller.MinNextActivity();
@@ -364,37 +365,15 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////// 
-//
-// Method:    IsBusy
-//
-// FullName:  NANDFlashSim::NandFlashSystem::IsBusy
-// Access:    public 
-// Returns:   bool
-//
-// Descriptions -
-// 
-//////////////////////////////////////////////////////////////////////////////
-bool NandFlashSystem::IsBusy()
-{
-    for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
-    {
-        if (_vctIncomingTrans[nDieIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
-        {
-            return true;
-        }   
-    }
-
-    return false;
-}
-
 
 UINT32 NandFlashSystem::BusyDieNums()
 {
+	const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
+
     UINT32 nDie =0;
-    for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
+    for(UINT32 nBusIdx = 0; nBusIdx < MAX_BUS; nBusIdx++)
     {
-        if (_vctIncomingTrans[nDieIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
+        if (_vctIncomingTrans[nBusIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
         {
             nDie++;
         }   
@@ -447,7 +426,7 @@ bool NandFlashSystem::IsActiveMode( void )
     {
         if(iTrans->_nTransOp != NAND_OP_NOT_DETERMINED)
         {
-            bActivate   = true;
+            bActivate = true;
             break;
         }
     }
