@@ -22,14 +22,14 @@
 *****************************************************************************/
 
 /********************************************************************
-	created:	2011/08/06
-	created:	6:8:2011   23:21
-	file base:	NandFlashSystem
-	file ext:	cpp
-	author:		Myoungsoo Jung
-				Pennsylvania State University, MDL Lab
-	
-	purpose:	
+    created:	2011/08/06
+    created:	6:8:2011   23:21
+    file base:	NandFlashSystem
+    file ext:	cpp
+    author:		Myoungsoo Jung
+                Pennsylvania State University, MDL Lab
+    
+    purpose:	
 *********************************************************************/
 
 #include "TypeSystem.h"
@@ -92,7 +92,7 @@ NV_RET NandFlashSystem::AddTransaction( UINT32 nHostTransId, NAND_TRANS_OP nTran
     NV_RET  nRet    = NAND_SUCCESS;
     bool    bBusy   = false;
     UINT16  nLun    = 0;
-	UINT16	nDieId	= NFS_PARSE_DIE_ADDR(nAddr, _stDevConfig._bits);
+    UINT16	nDieId	= NFS_PARSE_DIE_ADDR(nAddr, _stDevConfig._bits);
     UINT32  nBusId  = nLun * nDieId + nDieId;
 
     if (nTransOp == NAND_OP_PROG_MULTIPLANE_CACHE || 
@@ -164,9 +164,9 @@ NV_RET NandFlashSystem::AddTransaction( Transaction &nandTrans )
     NV_RET  nRet    = NAND_SUCCESS;
     bool    bBusy   = false;
     UINT16  nLun    = 0;
-	UINT16  nDieId  = NFS_PARSE_DIE_ADDR(nandTrans._nAddr, _stDevConfig._bits);
+    UINT16  nDieId  = NFS_PARSE_DIE_ADDR(nandTrans._nAddr, _stDevConfig._bits);
 
-	UINT32  nBusId  = nLun * nDieId + nDieId;
+    UINT32  nBusId  = nLun * nDieId + nDieId;
 
 
     if (_vctIncomingTrans[nBusId]._nTransOp != NAND_OP_NOT_DETERMINED)
@@ -319,7 +319,7 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
     const UINT32 nClockPeriods = NFS_GET_PARAM(ISV_CLOCK_PERIODS);
     assert(nClockPeriods != 0);
 
-	const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
+    const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
 
     if(nMinTime == 0 )
     {
@@ -368,7 +368,7 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
 
 UINT32 NandFlashSystem::BusyDieNums()
 {
-	const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
+    const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
 
     UINT32 nDie =0;
     for(UINT32 nBusIdx = 0; nBusIdx < MAX_BUS; nBusIdx++)

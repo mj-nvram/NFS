@@ -151,7 +151,7 @@ void NandController::Update(UINT64 nTime)
     if(_nBubbleTime == 0 || nTime > _nBubbleTime)
     {
         nTime -= _nBubbleTime;
-		_vctLunLevelHostIdleTime[nLunIdx] += _nBubbleTime;
+        _vctLunLevelHostIdleTime[nLunIdx] += _nBubbleTime;
 
         _vctLuns[nLunIdx].Update(nTime);
        
@@ -205,10 +205,10 @@ void NandController::Update(UINT64 nTime)
             _vctDieLevelNandClockIdleTime[nLunIdx][nDieIdx] += _vctLuns[nLunIdx].GetCurNandClockIdleTime(nDieIdx);
             nHostIdle = _vctLuns[nLunIdx].GetCurHostClockIdleTime(nDieIdx);
             
-			_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += _nBubbleTime;
-			_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nHostIdle;
+            _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += _nBubbleTime;
+            _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nHostIdle;
             
-			if(nHostIdle < nMinIdle)
+            if(nHostIdle < nMinIdle)
             {
                 nMinIdle = nHostIdle;
             }
@@ -240,7 +240,7 @@ void NandController::Update(UINT64 nTime)
             _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] += nTime;
         }
         
-		_vctLunLevelHostIdleTime[nLunIdx] += nTime;
+        _vctLunLevelHostIdleTime[nLunIdx] += nTime;
         _nBubbleTime = _nBubbleTime - nTime;
     }
     
@@ -271,8 +271,8 @@ NV_RET NandController::BuildandAddStage( Transaction &stTrans )
 {
     NandStagePacket stagePacket(genFineGrainTransId(), _nCurrentTime);
     UINT16  nLunId = 0;
-	UINT16  nDieId = NFS_PARSE_DIE_ADDR(stTrans._nAddr, _stDevConfig._bits);
-	UINT32  nBusId = nLunId * nDieId + nDieId;
+    UINT16  nDieId = NFS_PARSE_DIE_ADDR(stTrans._nAddr, _stDevConfig._bits);
+    UINT32  nBusId = nLunId * nDieId + nDieId;
     NV_RET  nRet   =   NAND_SUCCESS;
 
     switch(stTrans._nTransOp)
@@ -726,11 +726,11 @@ void NandController::ReportPerformance()
             cout << "Die I/O traffic (Bytes)                      :" << dec << _vctLuns[nLunIdx].GetRequestTraffic(nDieIdx) << endl;
             cout << "Die NAND Clock Idle Time                     :" << _vctDieLevelNandClockIdleTime[nLunIdx][nDieIdx] << endl;
             cout << "Die Host Clock Idle Time                     :" << _vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] << endl;
-			cout << "Die idle fraction (%)                        :" << ((float)_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] * 100) / (float) _nCurrentTime << endl;
+            cout << "Die idle fraction (%)                        :" << ((float)_vctDieLevelHostClockIdleTime[nLunIdx][nDieIdx] * 100) / (float) _nCurrentTime << endl;
             cout << "Die resource utilization (%)                 :" <<  nUtil << endl;
             cout << "Die resource contention time                 :" << _vctResourceContentionTime[nLunIdx][nDieIdx] << endl;
             cout << "Die resource contention ratio (%)            :" << ((float)_vctResourceContentionTime[nLunIdx][nDieIdx] * 100) / (float) _nCurrentTime << endl;
-			cout << endl;
+            cout << endl;
         }
     }
 }

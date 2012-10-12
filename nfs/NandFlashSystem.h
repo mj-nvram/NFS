@@ -23,14 +23,14 @@
 
 
 /********************************************************************
-	created:	2011/08/06
-	created:	6:8:2011   23:22
-	file base:	NandFlashSystem
-	file ext:	h
-	author:		Myoungsoo Jung
-				Pennsylvania State University, MDL Lab
-	
-	purpose:	
+    created:	2011/08/06
+    created:	6:8:2011   23:22
+    file base:	NandFlashSystem
+    file ext:	h
+    author:		Myoungsoo Jung
+                Pennsylvania State University, MDL Lab
+    
+    purpose:	
 *********************************************************************/
 
 
@@ -76,7 +76,7 @@ public :
     // interfaces for inquiring NAND flash status.
     //////////////////////////////////////////////////////////////////////////
     bool            IsBusy(UINT16 nBusId);
-	bool            IsBusy() { return IsActiveMode(); }
+    bool            IsBusy() { return IsActiveMode(); }
     UINT32          BusyDieNums();
     bool            IsActiveMode( void );
     bool            IsIoBusActive( void ) {return _controller.IsIoBusActive();}
