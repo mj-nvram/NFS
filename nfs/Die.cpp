@@ -138,8 +138,10 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                 // need col addressing cycle, the addresses will be ignored.
                 _vctColRegister[nPlane]   = 0;
             }
-
-            _vctColRegister[nPlane]   = stPacket._nCol;
+            else
+            {
+                _vctColRegister[nPlane]   = stPacket._nCol;
+            }
 
             if(_nCommandRegister == NAND_CMD_BLOCK_ERASE ||
                _nCommandRegister == NAND_CMD_BLOCK_MULTIPLANE_ERASE ||
