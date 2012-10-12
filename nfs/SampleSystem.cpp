@@ -228,7 +228,6 @@ int main(int argc, char* argv[])
     UINT32 nTestPageNums        = vm["tpages"].as<UINT32>();
     try
     {
-
         if((nTestPageNums & (nTestPageNums - 1)) != 0)
         {
             throw "# of page is not a 2 to n";
@@ -254,11 +253,8 @@ int main(int argc, char* argv[])
 }
 
 
-
 void SingleDieSequentialAccessTest(UINT32 nNumsBlocks, UINT32 nTransferSizeUnit, NandFlashSystem &flash, NandDeviceConfig &stDevConfig)
 {
-    
-
     for(UINT32 nTuOp = 0; nTuOp < TESTUNIT_OP_MAX_OPTYPES; ++nTuOp)
     {
         if(nTuOp >= TESTUNIT_OP_NX && stDevConfig._nNumsPlane <= 1) continue;
@@ -285,21 +281,14 @@ void SingleDieSequentialAccessTest(UINT32 nNumsBlocks, UINT32 nTransferSizeUnit,
 
 void SingleDieTest(TESTUNIT_OP  nTuOp,  UINT32 nNumsBlocks, UINT32 nTransferSizeUnit, NandFlashSystem &flash, NandDeviceConfig &stDevConfig, bool bWrite)
 {
-    
-
     std::cout << "Unit Test Operation Type [" << (bWrite ? "WRITE] :" : "READ] : " )<< nTuOp << std::endl;
     BasicPagebasedOpTest((TESTUNIT_OP)nTuOp , flash, 0, nNumsBlocks, stDevConfig._nNumsPgPerBlk, nTransferSizeUnit, bWrite);
     flash.ReportStatistics();
-
 }
-
-
 
 
 void BlockDataMigrationTest(UINT32 nNumsBlocks, UINT32 nDie, NandFlashSystem &flash, NandDeviceConfig &stDevConfig )
 {
-    
-
     // single plane test
     EraseBlock(flash, nDie, nNumsBlocks, false);
     for(UINT32 nBlockIdx = 0; nBlockIdx < nNumsBlocks; nBlockIdx++)
@@ -320,8 +309,7 @@ void BlockDataMigrationTest(UINT32 nNumsBlocks, UINT32 nDie, NandFlashSystem &fl
 }
 
 void MultiDieTest(TESTUNIT_OP  nTuOp,  UINT32 nNumsBlocks, UINT32 nTransferSizeUnit, NandFlashSystem &flash, NandDeviceConfig &stDevConfig)
-{
-    
+{   
     std::cout << "Unit Test Operation Type [WRITE]: " << nTuOp << std::endl;
     DieInterleavedOpTest((TESTUNIT_OP)nTuOp , flash, stDevConfig._nNumsDie, nNumsBlocks, stDevConfig._nNumsPgPerBlk, nTransferSizeUnit, true);
     flash.ReportStatistics();
@@ -330,8 +318,6 @@ void MultiDieTest(TESTUNIT_OP  nTuOp,  UINT32 nNumsBlocks, UINT32 nTransferSizeU
 
 void MultiDieSequentialAccessTest(UINT32 nNumsBlocks, UINT32 nTransferSizeUnit, NandFlashSystem &flash, NandDeviceConfig &stDevConfig)
 {
-    
-
     for(UINT32 nTuOp = 0; nTuOp < TESTUNIT_OP_MAX_OPTYPES; ++nTuOp)
     {
         if(nTuOp >= TESTUNIT_OP_NX && stDevConfig._nNumsPlane <= 1) continue;
