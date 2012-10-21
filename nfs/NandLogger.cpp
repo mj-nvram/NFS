@@ -39,6 +39,7 @@ std::ofstream* NandLogger::GetStream( NANDLOG_TYPE nLogType )
     static char     *filePath[] = {"SnoopNandPlaneRead",\
                                    "SnoopNandPlaneWrite",\
                                    "SnoopInternalState",\
+                                   "SnoopInternalAccCycle",\
                                    "SnoopBusTransaction",\
                                    "SnoopIoCompletion",\
                                    "CyclesForEachState",\
@@ -91,6 +92,9 @@ void NandLogger::printFieldInfo( NANDLOG_TYPE nLogType )
         break;
     case NANDLOG_SNOOP_INTERNAL_STATE :
         _logstream[nLogType] << "Die ID , TransId , Command , Stage , Current Cycles , Cycle" << std::endl;
+        break;
+    case NANDLOG_SNOOP_INTERNAL_ACC_CYCLE:
+        _logstream[nLogType] << "Die ID , TransId , Fsm State, Cycles" << std::endl;
         break;
     case NANDLOG_TOTAL_CYCLE_FOR_EACH_STATE :
         _logstream[nLogType] << "Controller ID , Die ID, Fsm State , Cycles" << std::endl;

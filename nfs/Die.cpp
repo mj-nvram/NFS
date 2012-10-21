@@ -720,6 +720,11 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
         NV_ERROR("Erroneous command orders were issued. NAND flash needs to reset");
     }
     REPORT_NAND(NANDLOG_SNOOP_INTERNAL_STATE, _nId << " , " << stPacket._nStageId << ", " << stPacket._nCommand << ", " << nStage << ", " <<  _nCurrentTime << ", " << _nNextActivate);
+        
+    for(UINT16 nIter = 0; nIter < NAND_FSM_MAX; ++nIter)
+    {
+        REPORT_NAND(NANDLOG_SNOOP_INTERNAL_ACC_CYCLE, _nId << " , " << stPacket._nStageId << " , " << nIter << " , " << GetAccumulatedFSMTime((NAND_FSM_STATE)nIter));
+    }
 
     return nNextStage;
 }
