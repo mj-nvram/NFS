@@ -88,6 +88,12 @@ class Die
     std::vector<UINT64> _vctAccumulatedTime;
     std::vector<UINT64> _vctPowerTime;
 
+    /************************************************************************/
+    /* For Logs                                                             */
+    /************************************************************************/
+    NAND_FSM_STATE _eUpdatedState;
+    UINT64 _nUpdatedAccTime;
+
 public :
 
     Die(UINT64 nSystemClock, NandDeviceConfig &devConfig);

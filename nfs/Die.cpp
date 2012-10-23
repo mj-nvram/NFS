@@ -76,6 +76,9 @@ Die::Die(UINT64 nSystemClock, NandDeviceConfig &devConfig ) :
     _nCurNandClockIdleTime = 0;
     _nCurrentTime    = nSystemClock;
     _bPowerSupply    = false;
+
+    _eUpdatedState = NAND_FSM_MAX;
+    _nUpdatedAccTime = 0;
     
     SoftReset();
 }
@@ -160,7 +163,9 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
             }
 
             _nNextActivate                      = ADDRESS_LETCH_TIME(_nLastAleBytes);
-            _vctAccumulatedTime[NAND_FSM_ALE]   += _nNextActivate; 
+            _eUpdatedState = NAND_FSM_ALE;
+            _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+            _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
 
 
             switch(_nCommandRegister)
@@ -217,9 +222,12 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
         {
             _nCommandRegister                   = stPacket._nCommand;
             _nNextActivate                      = COMMAND_LETCH_TIME;
-            _vctAccumulatedTime[NAND_FSM_CLE]   += _nNextActivate; 
+            
+            _eUpdatedState = NAND_FSM_CLE;
+            _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+            _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+            
             _bLeakDc                            = false;
-
             _bNandBusy                          = false;
 
             switch(_nCommandRegister)
@@ -351,6 +359,10 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
             case NAND_CMD_READ_MULTIPLANE_CACHE :
                 _nNextActivate                      += nandArrayTimeParam(_vctRowRegister[nPlane], ITV_tDCBSYR1);
                 _vctAccumulatedTime[NAND_FSM_CLE]   += nandArrayTimeParam(_vctRowRegister[nPlane], ITV_tDCBSYR1); 
+
+                _eUpdatedState = NAND_FSM_CLE;
+                _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
                 nNextStage                          = NAND_STAGE_TON;
                 break;
             //////////////////////////////////////////////////////////////////////////
@@ -370,7 +382,11 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
 
                     _nNextActivate                      += nEraseTime;
                     _vctPowerTime[NAND_DC_ERASE]        += nEraseTime;
-                    _vctAccumulatedTime[NAND_FSM_ERASE] += nEraseTime;
+
+                    _eUpdatedState = NAND_FSM_ERASE;
+                    _vctAccumulatedTime[_eUpdatedState] += nEraseTime; 
+                    _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
                     UINT8 nPlaneIdx = 0;
                     for(std::vector<UINT32>::iterator iRegister =  _vctRowRegister.begin(); iRegister != _vctRowRegister.end(); ++iRegister)
                     {
@@ -393,7 +409,11 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                     nNextStage          = NAND_STAGE_READ_STATUS;
                     _nNextActivate                  += nEraseTime;
                     _vctPowerTime[NAND_DC_ERASE]    += nEraseTime;
-                    _vctAccumulatedTime[NAND_FSM_ERASE]   += nEraseTime;
+
+                    _eUpdatedState = NAND_FSM_ERASE;
+                    _vctAccumulatedTime[_eUpdatedState] += nEraseTime; 
+                    _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
 #ifndef WITHOUT_PLANE_STATS
                     _vctPlanes[nPlane].Erase(_vctRowRegister[nPlane]);
 #endif
@@ -404,6 +424,10 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                 nNextStage                          = NAND_STAGE_RESET_DELTA;                
                 _nNextActivate                      += NFS_GET_PARAM(ITV_tWB) + NFS_GET_PARAM(ITV_tRST);
                 _vctAccumulatedTime[NAND_FSM_TIN]   += NFS_GET_PARAM(ITV_tWB) + NFS_GET_PARAM(ITV_tRST);
+
+                _eUpdatedState = NAND_FSM_TIN;
+                _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+                
                 break;
             }
         }
@@ -433,7 +457,10 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                     _nNextActivate  += NFS_GET_PARAM(ITV_tADL) - NFS_GET_PARAM(ITV_tWC);
                 }
                 
-                _vctAccumulatedTime[NAND_FSM_TIR]    += _nNextActivate;
+                _eUpdatedState = NAND_FSM_TIR;
+                _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+                _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
                 _bStanbyDc                           = false;
                 if(_nCommandRegister == NAND_CMD_PROG_RANDOM || _nCommandRegister == NAND_CMD_PROG_MULTIPLANE_RANDOM)
                 {
@@ -519,7 +546,10 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                     nNextStage      = NAND_STAGE_READ_STATUS;
                 }
 
-                _vctAccumulatedTime[NAND_FSM_TIN]   += _nNextActivate;
+                _eUpdatedState = NAND_FSM_TIN;
+                _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+                _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
                 // reset DATA IN CYCLE
                 _vctRandomBytes[nPlane]             = NULL_SIG(UINT32);
             }
@@ -534,7 +564,11 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
             _bNandBusy      = false;
 
             _nNextActivate  = READ_STATUS_TIME;
-            _vctAccumulatedTime[NAND_FSM_TOR]   += _nNextActivate;
+
+            _eUpdatedState = NAND_FSM_TOR;
+            _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+            _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
             _vctPowerTime[NAND_DC_READ]         += _nNextActivate;
             _bStanbyDc                          = false;
             if(stPacket._pStatusData != NULL)
@@ -640,7 +674,9 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                 _nNextActivate      = NFS_GET_PARAM(ITV_tR);
             }
 
-            _vctAccumulatedTime[NAND_FSM_TON]  += _nNextActivate;
+            _eUpdatedState = NAND_FSM_TON;
+            _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+            _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
 
             if(_bCacheNohideTon == true)
             {
@@ -682,7 +718,11 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
                 }
 #endif
                 _nNextActivate = DATA_OUT_TIME(_vctRandomBytes[nPlane] / (_stDevConfig._nNumsIoPins / 8));
-                _vctAccumulatedTime[NAND_FSM_TOR]   += _nNextActivate;
+
+                _eUpdatedState = NAND_FSM_TOR;
+                _vctAccumulatedTime[_eUpdatedState] += _nNextActivate; 
+                _nUpdatedAccTime = _vctAccumulatedTime[_eUpdatedState];
+
                 _vctPowerTime[NAND_DC_READ]         += _nNextActivate;
                 _bStanbyDc                           = false;
 
@@ -721,9 +761,9 @@ NAND_STAGE Die::TransitStage(NAND_STAGE nStage, NandStagePacket &stPacket)
     }
     REPORT_NAND(NANDLOG_SNOOP_INTERNAL_STATE, _nId << " , " << stPacket._nStageId << ", " << stPacket._nCommand << ", " << nStage << ", " <<  _nCurrentTime << ", " << _nNextActivate);
         
-    for(UINT16 nIter = 0; nIter < NAND_FSM_MAX; ++nIter)
+    if(_eUpdatedState != NAND_FSM_MAX)
     {
-        REPORT_NAND(NANDLOG_SNOOP_INTERNAL_ACC_CYCLE, _nId << " , " << stPacket._nStageId << " , " << nIter << " , " << GetAccumulatedFSMTime((NAND_FSM_STATE)nIter));
+        REPORT_NAND(NANDLOG_SNOOP_INTERNAL_ACC_CYCLE, _nId << " , " << stPacket._nStageId << " , " << _eUpdatedState << " , " << _nUpdatedAccTime);    
     }
 
     return nNextStage;
