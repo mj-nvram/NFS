@@ -68,15 +68,18 @@ public :
     //////////////////////////////////////////////////////////////////////////
     void            Update( UINT64 nCycles );
     void            UpdateBackToBack( UINT64 nCycles );
+    UINT64          UpdateBackToBackEx( UINT64 nCycles );
+    void            UpdateBackToBackWithoutTickOver( UINT64 nCycles );
     UINT64          UpdateWithoutIdleCycles( void );
     void            DelayUpdate( UINT64 nBubbleCycle );
+    void            TickOverTime( UINT64 nCycles ) { _controller.TickOver(nCycles);}
 
 
     //////////////////////////////////////////////////////////////////////////
     // interfaces for inquiring NAND flash status.
     //////////////////////////////////////////////////////////////////////////
     bool            IsBusy(UINT16 nBusId);
-    bool            IsBusy() { return IsActiveMode(); }
+    bool            IsBusy();
     UINT32          BusyDieNums();
     bool            IsActiveMode( void );
     bool            IsIoBusActive( void ) {return _controller.IsIoBusActive();}

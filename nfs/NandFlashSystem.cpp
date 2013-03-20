@@ -319,13 +319,12 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
     const UINT32 nClockPeriods = NFS_GET_PARAM(ISV_CLOCK_PERIODS);
     assert(nClockPeriods != 0);
 
-    const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
-
     if(nMinTime == 0 )
     {
-        for(UINT32 nBusIdx = 0; nBusIdx < MAX_BUS; nBusIdx++)
+        bool bBusy = false;
+        for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
         {
-            if(IsBusy(nBusIdx))
+            if(bBusy = IsBusy(nDieIdx))
             {
                 _controller.Update(ZERO_TIME);
                 nMinTime = _controller.MinNextActivity();
@@ -365,15 +364,37 @@ void NandFlashSystem::UpdateBackToBack( UINT64 nCycles )
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////// 
+//
+// Method:    IsBusy
+//
+// FullName:  NANDFlashSim::NandFlashSystem::IsBusy
+// Access:    public 
+// Returns:   bool
+//
+// Descriptions -
+// 
+//////////////////////////////////////////////////////////////////////////////
+bool NandFlashSystem::IsBusy()
+{
+    for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
+    {
+        if (_vctIncomingTrans[nDieIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
+        {
+            return true;
+        }   
+    }
+
+    return false;
+}
+
 
 UINT32 NandFlashSystem::BusyDieNums()
 {
-    const UINT32 MAX_BUS = _stDevConfig._nNumsLun * _stDevConfig._nNumsDie;
-
     UINT32 nDie =0;
-    for(UINT32 nBusIdx = 0; nBusIdx < MAX_BUS; nBusIdx++)
+    for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
     {
-        if (_vctIncomingTrans[nBusIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
+        if (_vctIncomingTrans[nDieIdx]._nTransOp != NAND_OP_NOT_DETERMINED)
         {
             nDie++;
         }   
@@ -536,4 +557,102 @@ UINT64 NandFlashSystem::GetCellActiveTime()
     return _controller.CurrentTime() - GetActivateBusTime() - _controller.TickOverTime();
 }
 
+
+// [7/5/2012]
+// Update cycles for multiple stages with given nCycles.
+// Unlike normal UpdateBackToBack, this extension version of UpdateBackToBackEx returns remaining cycles
+// Note that the host simulator is responsible for managing this remaining cycles (e.g., passively update Tick-over times) 
+UINT64 NandFlashSystem::UpdateBackToBackEx( UINT64 nCycles )
+{
+    UINT64 nMinTime = _controller.MinNextActivity();
+    const UINT32 nClockPeriods = NFS_GET_PARAM(ISV_CLOCK_PERIODS);
+    assert(nClockPeriods != 0);
+
+    if(nMinTime == 0 )
+    {
+        bool bBusy = false;
+        for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
+        {
+            if(bBusy = IsBusy(nDieIdx))
+            {
+                _controller.Update(ZERO_TIME);
+                nMinTime = _controller.MinNextActivity();
+                break;
+            }
+        }
+
+        return nCycles;
+    }
+
+    UINT64 nMinCycles = nMinTime / nClockPeriods;
+    if(nMinTime % nClockPeriods) nMinCycles++;
+
+    while(nMinCycles < nCycles)
+    {
+        _nCurrentTime += nMinCycles * nClockPeriods;
+        _controller.Update(nMinCycles * nClockPeriods);
+
+        nCycles -= nMinCycles;
+
+        nMinTime = _controller.MinNextActivity();
+        if(nMinTime == 0)
+        {
+            return nCycles;
+        }
+
+        nMinCycles = nMinTime / nClockPeriods;
+        if(nMinTime % nClockPeriods) nMinCycles++;
+    }
+
+    return nCycles;
+}
+
+void NandFlashSystem::UpdateBackToBackWithoutTickOver( UINT64 nCycles )
+{
+    UINT64 nMinTime = _controller.MinNextActivity();
+    const UINT32 nClockPeriods = NFS_GET_PARAM(ISV_CLOCK_PERIODS);
+    assert(nClockPeriods != 0);
+
+    if(nMinTime == 0 )
+    {
+        bool bBusy = false;
+        for(UINT32 nDieIdx = 0; nDieIdx < _stDevConfig._nNumsDie; nDieIdx++)
+        {
+            if(bBusy = IsBusy(nDieIdx))
+            {
+                _controller.Update(ZERO_TIME);
+                nMinTime = _controller.MinNextActivity();
+                break;
+            }
+        }
+
+        return;
+    }
+
+    UINT64 nMinCycles = nMinTime / nClockPeriods;
+    if(nMinTime % nClockPeriods) nMinCycles++;
+
+    while(nMinCycles < nCycles)
+    {
+        _nCurrentTime += nMinCycles * nClockPeriods;
+        _controller.Update(nMinCycles * nClockPeriods);
+
+        nCycles -= nMinCycles;
+
+        nMinTime = _controller.MinNextActivity();
+        if(nMinTime == 0)
+        {
+            return;
+        }
+
+        nMinCycles = nMinTime / nClockPeriods;
+        if(nMinTime % nClockPeriods) nMinCycles++;
+    }
+
+    if(nCycles != 0) 
+    {
+        _nCurrentTime += nCycles * nClockPeriods;
+        _controller.Update(nCycles * nClockPeriods);
+    }
+}
 }
