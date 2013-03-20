@@ -53,18 +53,15 @@ class LogicalUnit {
     UINT64              _nCurrentTime;
     UINT64              _nMinNextActivate;
     UINT32              _nTransactionBusDepth;
-    std::vector<Die>    _vctDies;
-    std::vector<UINT64> _vctRequestTraffic;
-    std::vector< std::list<NandStagePacket> > _vctNandBus;    // nums of dies.
-
     bool                _bBusy;
     UINT16              _nIoBusOwnerDieId;
 
+    std::vector<Die>    _vctDies;
+    std::vector<UINT64> _vctRequestTraffic;
+    std::vector< std::list<NandStagePacket> > _vctNandBus;    // the numbers of internal dies.
     std::vector<bool>   _vctIoCompletion;
     std::vector<bool>   _vctNeedforCallback;
-
     std::vector<UINT64> _vctFirstArrivalCycleForInitialCommand;
-
     std::vector<UINT64> _vctCurHostClockIdleTime;
 
     
@@ -78,26 +75,25 @@ public:
     void                ReportBandwidth();
     bool                CheckBusy(UINT8 nDie = NULL_SIG(UINT8));
     bool                IsDieIdle(UINT8 nDie);
-    UINT64              MinNextActivity() { return _nMinNextActivate; }
-    inline UINT32       ID() const { return _nId; }
+    UINT64              MinNextActivity()                   { return _nMinNextActivate; }
+    inline UINT32       ID() const                          { return _nId; }
     void                ID(UINT32 val);
     UINT64              AccumulatedTraffic();
     void                HardReset(UINT32 nSystemClock, NandDeviceConfig &stDevConfig);
-    inline bool         IsIoBusActive()             { return (_nIoBusOwnerDieId == NULL_SIG(UINT16)) ? false : true;}
+    inline bool         IsIoBusActive()                     { return (_nIoBusOwnerDieId == NULL_SIG(UINT16)) ? false : true;}
 
     UINT64              CurrentTime(UINT8 nDie)             { return _vctDies[nDie].CurrentTime(); }
     UINT64              GetCurNandClockIdleTime(UINT8 nDie) { return _vctDies[nDie].GetCurNandClockIdleTime(); }
     UINT64              GetCurHostClockIdleTime(UINT8 nDie) { return _vctCurHostClockIdleTime[nDie]; }
     
-    UINT64              GetRequestTraffic(UINT8 nDie) { return _vctRequestTraffic[nDie]; }
+    UINT64              GetRequestTraffic(UINT8 nDie)       { return _vctRequestTraffic[nDie]; }
     UINT64              GetAccumulatedFSMTime(NAND_FSM_STATE nFsmState, UINT8 nDie) { return _vctDies[nDie].GetAccumulatedFSMTime(nFsmState); }
 
 private :
-    inline UINT16       getBusOwnerDieId()          {return _nIoBusOwnerDieId;}
-    inline void         acquireIoBus(UINT16 nDieId) { if(_nIoBusOwnerDieId == NULL_SIG(UINT16)) _nIoBusOwnerDieId = nDieId;}
-    inline void         releaseIobus(UINT16 nDieId) { if(_nIoBusOwnerDieId == nDieId) _nIoBusOwnerDieId = NULL_SIG(UINT16);}
+    inline UINT16       getBusOwnerDieId()                  {return _nIoBusOwnerDieId;}
+    inline void         acquireIoBus(UINT16 nDieId)         { if(_nIoBusOwnerDieId == NULL_SIG(UINT16)) _nIoBusOwnerDieId = nDieId;}
+    inline void         releaseIobus(UINT16 nDieId)         { if(_nIoBusOwnerDieId == nDieId) _nIoBusOwnerDieId = NULL_SIG(UINT16);}
     NAND_COMMAND        getConfirmCommand(NAND_COMMAND nCommand);
-
     bool                transitStage(UINT8 nDieIdx, bool &bTransitFailed);
 };
 

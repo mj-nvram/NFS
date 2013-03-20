@@ -792,4 +792,12 @@ UINT64 NandController::GetActiveBusTime( UINT32 nLunId, UINT32 nDieId )
     nBusTime += _vctLuns[nLunId].GetAccumulatedFSMTime(NAND_FSM_TOR, nDieId);
     return nBusTime;
 }
+
+UINT64 NandController::GetActiveCellTime( UINT32 nLunId, UINT32 nDieId )
+{    
+    UINT64 nBusTime = _vctLuns[nLunId].GetAccumulatedFSMTime(NAND_FSM_TIN, nDieId);
+    nBusTime += _vctLuns[nLunId].GetAccumulatedFSMTime(NAND_FSM_TON, nDieId);
+    nBusTime += _vctLuns[nLunId].GetAccumulatedFSMTime(NAND_FSM_ERASE, nDieId);
+    return nBusTime;
+}
 } 

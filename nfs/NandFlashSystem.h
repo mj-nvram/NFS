@@ -93,13 +93,15 @@ public :
     UINT64          GetResourceContentionTime();
     UINT64          GetActivateBusTime();
     UINT64          GetCellActiveTime();
-    UINT64          GetClockPeriods(void) { return NFS_GET_PARAM(ISV_CLOCK_PERIODS); }  
+    UINT64          GetActivateBusTime(UINT32 nDieId);
+    UINT64          GetCellActiveTime(UINT32 nDieId);
+    UINT64          GetClockPeriods(void)           { return NFS_GET_PARAM(ISV_CLOCK_PERIODS); }  
     UINT64          CurrentTime()                   { return _controller.CurrentTime(); } 
+    UINT64          CurrentTime(UINT32 nDieId)      { return _controller.CurrentTime(nDieId); } 
     UINT64          TickOverTime()                  { return _controller.TickOverTime();}
-    inline UINT64   CurrentTime(UINT32 nDieId)      { return _controller.CurrentTime(nDieId);}
-    UINT64          MinNextActivity() { return GetCyclesFromTime(_controller.MinNextActivity()); }
-    UINT64          MinIoBusActivity() { return GetCyclesFromTime(_controller.MinIoBusActivity()); }
-    inline NandDeviceConfig GetDeviceConfig( void )         { return _stDevConfig; }
+    UINT64          MinNextActivity()               { return GetCyclesFromTime(_controller.MinNextActivity()); }
+    UINT64          MinIoBusActivity()              { return GetCyclesFromTime(_controller.MinIoBusActivity()); }
+    inline NandDeviceConfig GetDeviceConfig( void ) { return _stDevConfig; }
 
     //////////////////////////////////////////////////////////////////////////
     // control interfaces

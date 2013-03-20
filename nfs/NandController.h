@@ -91,17 +91,17 @@ public :
     
     void                    ReportPerformance();
     void                    ReportStatistics();
-    bool                    IsIoBusActive() { return _vctLuns[0].IsIoBusActive();}
-    UINT64                  CurrentTime(UINT32 nDieIdx)                        { return _vctLuns[0].CurrentTime(nDieIdx);}  
-    UINT64                  CurrentTime() {return _nCurrentTime + _nIdleTime;}
-    UINT64                  TickOverTime()  {return _nIdleTime;}
+    bool                    IsIoBusActive()                 { return _vctLuns[0].IsIoBusActive();}
+    UINT64                  CurrentTime(UINT32 nDieIdx)     { return _vctLuns[0].CurrentTime(nDieIdx) + TickOverTime();}  
+    UINT64                  CurrentTime()                   { return _nCurrentTime + TickOverTime();}
+    UINT64                  TickOverTime()                  { return _nIdleTime;}
 
     UINT64                  GetNandClockIdleTime(UINT32 nLunId, UINT32 nDieId) { return _vctDieLevelNandClockIdleTime[nLunId][nDieId]; }
     UINT64                  GetHostClockIdleTime(UINT32 nLunId, UINT32 nDieId) { return _vctDieLevelHostClockIdleTime[nLunId][nDieId]; }
     UINT64                  GetHostClockIdleTime(UINT32 nLunId)                { return _vctLunLevelHostIdleTime[nLunId];}
     UINT64                  GetResourceContentionTime(UINT32 nLunId, UINT32 nDieId) { return _vctResourceContentionTime[nLunId][nDieId]; }
     UINT64                  GetActiveBusTime(UINT32 nLunId, UINT32 nDieId);
-
+    UINT64                  GetActiveCellTime( UINT32 nLunId, UINT32 nDieId );
 
     NandController(UINT64 nSystemClock, NandDeviceConfig &stConfig);
     ~NandController();

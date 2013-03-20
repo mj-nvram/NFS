@@ -541,6 +541,9 @@ UINT64 NandFlashSystem::GetResourceContentionTime()
 
 UINT64 NandFlashSystem::GetActivateBusTime()
 {
+    //
+    // This doesn't include internal bus contention times among multiple dies.
+    // 
     UINT64 nActiveBusTime =0;
     for (UINT32 nLunId = 0; nLunId < _stDevConfig._nNumsLun; nLunId++)
     {
@@ -552,16 +555,32 @@ UINT64 NandFlashSystem::GetActivateBusTime()
     return nActiveBusTime;
 }
 
+UINT64 NandFlashSystem::GetActivateBusTime(UINT32 nDieId)
+{
+    UINT32 nLunId           = 0; // LUN will be removed   
+    return _controller.GetActiveBusTime(nLunId, nDieId);
+}
+
+UINT64 NandFlashSystem::GetCellActiveTime(UINT32 nDieId)
+{
+    UINT32 nLunId           = 0; // LUN will be removed   
+    return _controller.GetActiveCellTime(nLunId, nDieId);
+}
+
+
+
 UINT64 NandFlashSystem::GetCellActiveTime()
 {
-    return _controller.CurrentTime() - GetActivateBusTime() - _controller.TickOverTime();
+    UINT64 nCellActiveTime  = 0;
+    UINT32 nLunId           = 0; // LUN will be removed 
+    return _controller.CurrentTime() - GetActivateBusTime() - _controller.TickOverTime() - GetHostClockIdleTime(nLunId);
 }
 
 
 // [7/5/2012]
 // Update cycles for multiple stages with given nCycles.
 // Unlike normal UpdateBackToBack, this extension version of UpdateBackToBackEx returns remaining cycles
-// Note that the host simulator is responsible for managing this remaining cycles (e.g., passively update Tick-over times) 
+// Note that the host simulator is responsible for managing these remaining cycles (e.g., passively update Tick-over times) 
 UINT64 NandFlashSystem::UpdateBackToBackEx( UINT64 nCycles )
 {
     UINT64 nMinTime = _controller.MinNextActivity();
